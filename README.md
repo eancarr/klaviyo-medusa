@@ -125,7 +125,7 @@ To use the product feed in Klaviyo:
 
 1. Access your product feed at: `https://your-medusa-url.com/feeds/products/{currencyCode}`
 
-   - Replace `{currencyCode}` with your store's currency code (e.g., `USD`, `EUR`)
+   - Replace `{currencyCode}` with your store's currency code (e.g., `usd`, `eur`)
 
 2. In your Klaviyo account:
    - Go to "Catalog" → "Products"
