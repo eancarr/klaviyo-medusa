@@ -12,6 +12,7 @@ A Medusa plugin that integrates Klaviyo's email marketing and customer engagemen
   - [Environment Variables](#environment-variables)
 - [Usage](#usage)
   - [Client-Side Integration](#client-side-integration)
+  - [Product Feed](#product-feed)
 - [Extending the Plugin](#extending-the-plugin)
 - [Local Development](#local-development)
 - [License](#license)
@@ -22,6 +23,7 @@ A Medusa plugin that integrates Klaviyo's email marketing and customer engagemen
 - Send order data to Klaviyo on order placement
 - Profile management in Klaviyo
 - Event tracking for key store actions
+- Klaviyo-compatible product feed for catalog syncing
 
 ## Prerequisites
 
@@ -116,6 +118,34 @@ The plugin checks for these consent settings when syncing customer data to Klavi
 - `metadata.klaviyo.consent.email_marketing`: Set to `true` to opt the customer into email marketing
 - `metadata.klaviyo.consent.sms_marketing`: Set to `true` to opt the customer into SMS marketing
 - Any other consent fields specific to your implementation
+
+### Product Feed
+
+The plugin provides a Klaviyo-compatible product feed API that allows you to sync your entire product catalog with Klaviyo. This enables product recommendations, abandoned cart emails with product details, and more.
+
+To use the product feed in Klaviyo:
+
+1. Access your product feed at: `https://your-medusa-url.com/feeds/products/{currencyCode}`
+
+   - Replace `{currencyCode}` with your store's currency code (e.g., `USD`, `EUR`)
+
+2. In your Klaviyo account:
+   - Go to "Catalog" → "Products"
+   - Select "Add a custom feed"
+   - Enter your product feed URL
+   - Configure sync settings according to your needs
+
+The product feed includes essential product data:
+
+- Product ID
+- Title
+- Description
+- Handle/Slug
+- Thumbnail and Images
+- Pricing information
+- Currency
+- Product URL
+- Categories
 
 ## Extending the Plugin
 
