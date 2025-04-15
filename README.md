@@ -21,8 +21,6 @@ A Medusa plugin that integrates Klaviyo's email marketing and customer engagemen
 
 - Automatically sync customers to Klaviyo when created or updated
 - Send order data to Klaviyo on order placement
-- Profile management in Klaviyo
-- Event tracking for key store actions
 - Klaviyo-compatible product feed for catalog syncing
 
 ## Prerequisites
