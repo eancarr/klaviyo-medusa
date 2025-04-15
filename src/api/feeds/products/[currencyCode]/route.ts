@@ -6,7 +6,7 @@ import {
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
-  const currencyCode = req.params.currencyCode;
+  const currencyCode = req.params.currencyCode.toLowerCase();
 
   const { data: products } = await query.graph({
     entity: "product",
