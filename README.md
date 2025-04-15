@@ -1,64 +1,164 @@
-<p align="center">
-  <a href="https://www.medusajs.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/59018053/229103275-b5e482bb-4601-46e6-8142-244f531cebdb.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    <img alt="Medusa logo" src="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    </picture>
-  </a>
-</p>
-<h1 align="center">
-  Medusa Plugin Starter
-</h1>
+# Klaviyo Integration for Medusa
 
-<h4 align="center">
-  <a href="https://docs.medusajs.com">Documentation</a> |
-  <a href="https://www.medusajs.com">Website</a>
-</h4>
+A Medusa plugin that integrates Klaviyo's email marketing and customer engagement platform with your Medusa store.
 
-<p align="center">
-  Building blocks for digital commerce
-</p>
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-    <a href="https://www.producthunt.com/posts/medusa"><img src="https://img.shields.io/badge/Product%20Hunt-%231%20Product%20of%20the%20Day-%23DA552E" alt="Product Hunt"></a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
+## Table of Contents
 
-## Compatibility
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Configuration Options](#configuration-options)
+  - [Environment Variables](#environment-variables)
+- [Usage](#usage)
+  - [Client-Side Integration](#client-side-integration)
+- [Extending the Plugin](#extending-the-plugin)
+- [Local Development](#local-development)
+- [License](#license)
 
-This starter is compatible with versions >= 2.4.0 of `@medusajs/medusa`. 
+## Features
 
-## Getting Started
+- Automatically sync customers to Klaviyo when created or updated
+- Send order data to Klaviyo on order placement
+- Profile management in Klaviyo
+- Event tracking for key store actions
 
-Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to set up a server.
+## Prerequisites
 
-Visit the [Plugins documentation](https://docs.medusajs.com/learn/fundamentals/plugins) to learn more about plugins and how to create them.
+- Medusa server (v2.4.0 or higher)
+- Klaviyo account with API credentials
 
-Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
+## Installation
 
-## What is Medusa
+```bash
+yarn add @variablevic/klaviyo-medusa
+```
 
-Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
+Then add the plugin to your `medusa-config.js` file:
 
-Learn more about [Medusa’s architecture](https://docs.medusajs.com/learn/introduction/architecture) and [commerce modules](https://docs.medusajs.com/learn/fundamentals/modules/commerce-modules) in the Docs.
+```js
+const plugins = [
+  // ...
+  {
+    resolve: "@variablevic/klaviyo-medusa",
+    options: {
+      apiKey: process.env.KLAVIYO_API_KEY,
+    },
+  },
+];
+```
 
-## Community & Contributions
+## Configuration
 
-The community and core team are available in [GitHub Discussions](https://github.com/medusajs/medusa/discussions), where you can ask for support, discuss roadmap, and share ideas.
+### Configuration Options
 
-Join our [Discord server](https://discord.com/invite/medusajs) to meet other community members.
+| Option   | Type     | Description          | Default     |
+| -------- | -------- | -------------------- | ----------- |
+| `apiKey` | `string` | Your Klaviyo API key | `undefined` |
 
-## Other channels
+### Environment Variables
 
-- [GitHub Issues](https://github.com/medusajs/medusa/issues)
-- [Twitter](https://twitter.com/medusajs)
-- [LinkedIn](https://www.linkedin.com/company/medusajs)
-- [Medusa Blog](https://medusajs.com/blog/)
+```bash
+KLAVIYO_API_KEY=your_klaviyo_api_key
+```
+
+## Usage
+
+Once installed and configured, the plugin will automatically:
+
+1. Sync customer data to Klaviyo when customers are created or updated
+2. Send order data to Klaviyo when orders are placed
+
+The plugin uses Medusa event subscribers to listen for relevant events and trigger synchronization workflows.
+
+### Client-Side Integration
+
+To properly manage marketing consent for Klaviyo in your storefront, you should set consent settings in the customer's metadata. This ensures compliance with privacy regulations by only subscribing customers who have explicitly given consent.
+
+When collecting customer information (during registration, newsletter signup, or checkout), update the customer metadata with Klaviyo consent flags:
+
+```ts
+// Example implementation in your storefront
+const updateCustomerConsent = async (
+  customerId: string,
+  consentSettings: {
+    email_marketing: boolean;
+    sms_marketing?: boolean;
+    transactional_sms?: boolean;
+  }
+) => {
+  // Call your store API endpoint that updates customer metadata
+  await fetch("/store/customers/me", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      metadata: {
+        klaviyo: {
+          consent: consentSettings,
+        },
+      },
+    }),
+  });
+};
+
+// Usage example
+updateCustomerConsent("cus_123", {
+  email_marketing: true,
+  sms_marketing: false,
+});
+```
+
+The plugin checks for these consent settings when syncing customer data to Klaviyo:
+
+- `metadata.klaviyo.consent.email_marketing`: Set to `true` to opt the customer into email marketing
+- `metadata.klaviyo.consent.sms_marketing`: Set to `true` to opt the customer into SMS marketing
+- Any other consent fields specific to your implementation
+
+## Extending the Plugin
+
+You can extend the plugin by:
+
+1. Creating custom workflows in your Medusa server that utilize the Klaviyo service
+2. Adding additional event subscribers to sync more data types
+3. Enhancing the data structure sent to Klaviyo
+
+Example of using the Klaviyo service in your own code:
+
+```ts
+// Access the Klaviyo service
+const klaviyoService = container.resolve("klaviyoService");
+
+// Create an event
+await klaviyoService.createEvent({
+  metric: {
+    name: "Custom Event",
+  },
+  profile: {
+    email: "customer@example.com",
+  },
+  properties: {
+    // Your custom properties
+  },
+});
+```
+
+## Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/klaviyo-medusa.git
+
+# Install dependencies
+cd klaviyo-medusa
+yarn
+
+# Start development server
+yarn dev
+```
+
+## License
+
+MIT
