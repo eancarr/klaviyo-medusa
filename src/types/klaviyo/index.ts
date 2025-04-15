@@ -45,7 +45,7 @@ export interface KlaviyoBulkSubscribePayload {
 }
 
 export interface IKlaviyoService {
-  createProfile(
+  upsertProfile(
     attributes: ProfileCreateQueryResourceObjectAttributes
   ): Promise<any>;
   createEvent(eventPayload: any): Promise<any>;

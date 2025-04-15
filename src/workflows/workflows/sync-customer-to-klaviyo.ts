@@ -1,15 +1,14 @@
+import { CustomerDTO } from "@medusajs/framework/types";
 import {
   createWorkflow,
   transform,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
-import { CustomerDTO } from "@medusajs/framework/types";
 import {
   ProfileCreateQueryResourceObjectAttributes,
   ProfileResponseObjectResource,
 } from "klaviyo-api";
-import syncCustomerProfileStep from "./steps/sync-customer-profile";
-import handleCustomerConsentStep from "./steps/handle-customer-consent";
+import { handleCustomerConsentStep, syncCustomerProfileStep } from "../steps";
 
 type WorkflowInput = {
   customer: CustomerDTO;

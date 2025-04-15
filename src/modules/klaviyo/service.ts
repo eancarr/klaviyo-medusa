@@ -1,4 +1,3 @@
-import { MedusaService } from "@medusajs/framework/utils";
 import {
   ApiKeySession,
   EventsApi,
@@ -7,34 +6,27 @@ import {
   ProfilesApi,
   ProfileSubscriptionBulkCreateJobEnum,
   ProfileSubscriptionCreateQueryResourceObject,
-  SubscriptionChannels,
   SubscriptionCreateJobCreateQuery,
-  SubscriptionParameters,
 } from "klaviyo-api";
-import { KlaviyoBulkSubscribePayload } from "../../types/klaviyo";
-import KlaviyoListConfig from "./models/klaviyo-list-config";
 
 type ModuleOptions = {
   apiKey: string;
 };
 
-class KlaviyoService extends MedusaService({
-  KlaviyoListConfig,
-}) {
+class KlaviyoService {
   private readonly apiKey: string;
   private readonly session: ApiKeySession;
 
   constructor({}, options: ModuleOptions) {
-    super(options);
     this.apiKey = options.apiKey;
 
     this.session = new ApiKeySession(this.apiKey);
   }
 
-  async createProfile(attributes: ProfileCreateQueryResourceObjectAttributes) {
+  async upsertProfile(attributes: ProfileCreateQueryResourceObjectAttributes) {
     const profilesApi = new ProfilesApi(this.session);
     const profile = await profilesApi
-      .createProfile({
+      .createOrUpdateProfile({
         data: {
           type: ProfileEnum.Profile,
           attributes,
@@ -62,7 +54,6 @@ class KlaviyoService extends MedusaService({
   async bulkSubscribeProfiles(
     payload: ProfileSubscriptionCreateQueryResourceObject[]
   ) {
-    console.log("payload from bulkSubscribeProfiles", JSON.stringify(payload));
     try {
       const profilesApi = new ProfilesApi(this.session);
 

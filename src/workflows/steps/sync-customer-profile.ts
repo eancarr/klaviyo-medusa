@@ -8,7 +8,7 @@ const syncCustomerProfileStep = createStep(
     const klaviyoService =
       context.container.resolve<IKlaviyoService>(KLAVIYO_MODULE);
 
-    const profile = await klaviyoService.createProfile(attributes);
+    const profile = await klaviyoService.upsertProfile(attributes);
 
     return new StepResponse(profile, profile.data.id);
   }

@@ -2,7 +2,7 @@ import {
   type SubscriberArgs,
   type SubscriberConfig,
 } from "@medusajs/framework";
-import sendOrderToKlaviyoWorkflow from "../workflows/send-order-to-klaviyo";
+import { sendOrderToKlaviyoWorkflow } from "../workflows";
 
 export default async function orderPlacedHandler({
   event: { data },

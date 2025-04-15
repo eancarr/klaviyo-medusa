@@ -114,8 +114,6 @@ const handleCustomerConsentStep = createStep(
       },
     ];
 
-    console.log("attributes from handle-customer-consent step", attributes);
-
     try {
       const result = await klaviyoService.bulkSubscribeProfiles(payload);
       return new StepResponse(

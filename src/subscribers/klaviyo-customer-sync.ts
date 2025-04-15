@@ -2,7 +2,7 @@ import {
   type SubscriberArgs,
   type SubscriberConfig,
 } from "@medusajs/framework";
-import syncCustomerToKlaviyoWorkflow from "../workflows/sync-customer-to-klaviyo";
+import { syncCustomerToKlaviyoWorkflow } from "../workflows";
 
 export default async function customerCreatedHandler({
   event: { data },
@@ -42,5 +42,5 @@ export default async function customerCreatedHandler({
 }
 
 export const config: SubscriberConfig = {
-  event: "customer.created",
+  event: ["customer.created", "customer.updated"],
 };

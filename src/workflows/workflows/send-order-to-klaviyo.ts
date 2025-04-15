@@ -2,8 +2,8 @@ import {
   createWorkflow,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
-import sendOrderEventStep from "./steps/send-order-event";
 import { StoreOrder } from "@medusajs/types";
+import { sendOrderEventStep } from "../steps";
 
 type WorkflowInput = {
   order: StoreOrder;
