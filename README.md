@@ -2,6 +2,23 @@
 
 A Medusa plugin that integrates Klaviyo's email marketing and customer engagement platform with your Medusa store.
 
+<p align="center">
+  <a href="https://twitter.com/intent/follow?screen_name=VariableVic" style="display: inline-block; margin-right: 8px;">
+    <img src="https://img.shields.io/twitter/follow/VariableVic.svg?label=Follow%20@VariableVic" alt="Follow @VariableVic" />
+  </a>
+
+  <a href="https://victorgerbrands.nl">
+    <img src="https://img.shields.io/badge/www-victorgerbrands.nl-blue.svg?style=flat" alt="Website" />
+  </a>
+
+  <a href="https://www.linkedin.com/in/victorgerbrands/">
+    <img src="https://img.shields.io/badge/linkedin-victorgerbrands-blue.svg?style=flat&logo=linkedin" alt="LinkedIn" />
+  </a>
+</p>
+
+
+
+
 ## Table of Contents
 
 - [Features](#features)
