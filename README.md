@@ -128,8 +128,9 @@ To use the product feed in Klaviyo:
    - Replace `{currencyCode}` with your store's currency code (e.g., `usd`, `eur`)
 
 2. In your Klaviyo account:
-   - Go to "Catalog" → "Products"
-   - Select "Add a custom feed"
+   - Go to "Content" → "Products"
+   - Click "Manage Custome Catalog Sources"
+   - Click "Add new source"
    - Enter your product feed URL
    - Configure sync settings according to your needs
 
