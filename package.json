@@ -1,6 +1,6 @@
 {
   "name": "@eancarr/klaviyo-medusa",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A Klaviyo plugin for Medusa.",
   "author": "Ean Carr (https://github.com/eancarr)",
   "license": "MIT",
