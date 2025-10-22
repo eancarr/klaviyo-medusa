@@ -4,7 +4,7 @@ import {
 } from "@medusajs/framework";
 import { sendOrderToKlaviyoWorkflow } from "../workflows";
 
-export default async function orderPlacedHandler({
+export default async function klaviyoOrderPlacedHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {

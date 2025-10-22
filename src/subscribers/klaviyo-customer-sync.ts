@@ -4,7 +4,7 @@ import {
 } from "@medusajs/framework";
 import { syncCustomerToKlaviyoWorkflow } from "../workflows";
 
-export default async function customerCreatedHandler({
+export default async function klaviyoCustomerSyncHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
