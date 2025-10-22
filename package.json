@@ -1,9 +1,17 @@
 {
-  "name": "@variablevic/klaviyo-medusa",
+  "name": "@eancarr/klaviyo-medusa",
   "version": "0.1.1",
   "description": "A Klaviyo plugin for Medusa.",
-  "author": "Variable Vic (https://variablevic.com)",
+  "author": "Ean Carr (https://github.com/eancarr)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eancarr/my-klaviyo-medusa.git"
+  },
+  "homepage": "https://github.com/eancarr/my-klaviyo-medusa#readme",
+  "bugs": {
+    "url": "https://github.com/eancarr/my-klaviyo-medusa/issues"
+  },
   "files": [
     ".medusa/server"
   ],
