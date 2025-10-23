@@ -23,6 +23,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       "variants.calculated_price.*",
       "images.*",
       "categories.*",
+      "brand.*",
     ],
     context: {
       variants: {
@@ -51,20 +52,19 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       id: product.id,
       title: product.title,
       description: product.description,
+      link: `${baseUrl}/products/${product.handle}`,
+      image_link: product.images?.[0]?.url || product.thumbnail,
       handle: product.handle,
       sku: product.variants?.[0]?.sku || product.id,
-      brand: product.metadata?.brand || "Unknown",
+      brand: product.brand?.name || "Unknown",
       condition: "new",
       availability: totalInventory > 0 ? "in stock" : "out of stock",
       inventory_quantity: totalInventory,
       price: Math.round(minPrice * 100), // Convert to cents
       compare_at_price: minPrice !== maxPrice ? Math.round(maxPrice * 100) : null,
       currency: currencyCode.toUpperCase(),
-      image: product.images?.[0]?.url || product.thumbnail,
       images: product.images?.map(img => img.url) || [product.thumbnail].filter(Boolean),
-      url: `${baseUrl}/products/${product.handle}`,
       categories: product.categories.map((category) => category.name),
-      tags: product.tags?.map(tag => tag.value) || [],
       created_at: product.created_at,
       updated_at: product.updated_at,
     };

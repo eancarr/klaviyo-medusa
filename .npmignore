@@ -1,0 +1,17 @@
+# Test files
+test-server.js
+simple-test-server.js
+test-package.json
+
+# Development files
+*.log
+.DS_Store
+node_modules/
+.cache/
+
+# IDE files
+.vscode/
+.idea/
+
+# Build artifacts
+.medusa/
