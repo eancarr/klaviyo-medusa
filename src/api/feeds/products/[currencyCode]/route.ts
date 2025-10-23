@@ -5,15 +5,16 @@ import {
 } from "@medusajs/framework/utils";
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
-  const currencyCode = req.params.currencyCode.toLowerCase();
-  
-  // Get the base URL from the request
-  const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
-  const host = req.get('x-forwarded-host') || req.get('host') || 'localhost:9000';
-  const baseUrl = `${protocol}://${host}`;
+  try {
+    const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
+    const currencyCode = req.params.currencyCode.toLowerCase();
+    
+    // Get the base URL from the request
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
+    const host = req.get('x-forwarded-host') || req.get('host') || 'localhost:9000';
+    const baseUrl = `${protocol}://${host}`;
 
-  const { data: products } = await query.graph({
+    const { data: products } = await query.graph({
     entity: "product",
     fields: [
       "*",
@@ -23,7 +24,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       "variants.calculated_price.*",
       "images.*",
       "categories.*",
-      "brand.*",
     ],
     context: {
       variants: {
@@ -56,7 +56,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       image_link: product.images?.[0]?.url || product.thumbnail,
       handle: product.handle,
       sku: product.variants?.[0]?.sku || product.id,
-      brand: product.brand?.name || "Unknown",
+      brand: product.metadata?.brand || "Unknown",
       condition: "new",
       availability: totalInventory > 0 ? "in stock" : "out of stock",
       inventory_quantity: totalInventory,
@@ -70,5 +70,12 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     };
   });
 
-  res.json(productsWithCalculatedPrice);
+    res.json(productsWithCalculatedPrice);
+  } catch (error) {
+    console.error('Error in product feed:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate product feed',
+      message: error.message 
+    });
+  }
 }
