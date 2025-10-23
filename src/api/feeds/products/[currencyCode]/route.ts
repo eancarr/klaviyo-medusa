@@ -7,6 +7,7 @@ import {
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {
     const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
+    const logger = req.scope.resolve("logger");
     const currencyCode = req.params.currencyCode.toLowerCase();
     
     // Get the base URL from the request
@@ -14,14 +15,36 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const host = req.get('x-forwarded-host') || req.get('host') || 'localhost:9000';
     const baseUrl = `${protocol}://${host}`;
 
+    // Debug: Try to query brands first
+    try {
+      const { data: brands } = await query.graph({
+        entity: "brand",
+        fields: ["id", "name"],
+      });
+      logger.info(`=== Brands in system: ${brands?.length || 0} brands ===`);
+      if (brands && brands.length > 0) {
+        logger.info(`Sample brand: ${JSON.stringify(brands[0])}`);
+      }
+    } catch (error) {
+      logger.error(`Error querying brands: ${error.message}`);
+    }
+
     const { data: products } = await query.graph({
     entity: "product",
     fields: [
-      "*",
+      "id",
+      "title",
+      "description",
+      "handle",
+      "thumbnail",
+      "created_at",
+      "updated_at",
+      "metadata",
       "variants.*",
       "variants.product.*",
       "variants.prices.*",
       "variants.calculated_price.*",
+      "variants.inventory_quantity",
       "images.*",
       "categories.*",
       "brand.*",
@@ -35,14 +58,16 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     },
   });
 
-  // Debug: Log brand data for first product
+  // Debug: Log detailed product data
   if (products.length > 0) {
-    console.log('Sample product brand data:', {
-      productId: products[0].id,
-      productTitle: products[0].title,
-      brandObject: products[0].brand,
-      brandName: products[0].brand?.name,
-    });
+    console.log('=== DEBUG: Product Feed Brand Data ===');
+    console.log('Total products:', products.length);
+    console.log('First product ID:', products[0].id);
+    console.log('First product title:', products[0].title);
+    console.log('First product brand object:', JSON.stringify(products[0].brand, null, 2));
+    console.log('First product keys:', Object.keys(products[0]));
+    console.log('First product metadata:', JSON.stringify(products[0].metadata, null, 2));
+    console.log('======================================');
   }
 
   const productsWithCalculatedPrice = products.map((product) => {
