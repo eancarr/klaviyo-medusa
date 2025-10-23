@@ -28,3 +28,6 @@ build
 .DS_Store
 
 /plugins/**
+
+.env.local
+.env

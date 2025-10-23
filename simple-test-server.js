@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config(); // Load environment variables from .env file
 const app = express();
 const PORT = 3000;
 
@@ -6,10 +7,8 @@ const PORT = 3000;
 app.get('/feeds/products/:currencyCode', (req, res) => {
   const currencyCode = req.params.currencyCode.toLowerCase();
   
-  // Get the base URL from the request
-  const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
-  const host = req.get('x-forwarded-host') || req.get('host') || 'localhost:3000';
-  const baseUrl = `${protocol}://${host}`;
+  // Get the storefront URL from environment variable
+  const baseUrl = process.env.STOREFRONT_URL || 'http://localhost:3000';
 
   // Mock product data
   const products = [

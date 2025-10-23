@@ -10,10 +10,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const logger = req.scope.resolve("logger");
     const currencyCode = req.params.currencyCode.toLowerCase();
     
-    // Get the base URL from the request
-    const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
-    const host = req.get('x-forwarded-host') || req.get('host') || 'localhost:9000';
-    const baseUrl = `${protocol}://${host}`;
+    // Get the storefront URL from environment variable
+    const baseUrl = process.env.STOREFRONT_URL || 'http://localhost:3000';
 
     // Debug: Try to query brands first
     try {
@@ -59,16 +57,18 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   });
 
   // Debug: Log detailed product data
+  logger.info('=== DEBUG: Product Feed Brand Data ===');
+  logger.info(`Total products: ${products.length}`);
   if (products.length > 0) {
-    console.log('=== DEBUG: Product Feed Brand Data ===');
-    console.log('Total products:', products.length);
-    console.log('First product ID:', products[0].id);
-    console.log('First product title:', products[0].title);
-    console.log('First product brand object:', JSON.stringify(products[0].brand, null, 2));
-    console.log('First product keys:', Object.keys(products[0]));
-    console.log('First product metadata:', JSON.stringify(products[0].metadata, null, 2));
-    console.log('======================================');
+    logger.info(`First product ID: ${products[0].id}`);
+    logger.info(`First product title: ${products[0].title}`);
+    logger.info(`First product brand object: ${JSON.stringify(products[0].brand, null, 2)}`);
+    logger.info(`First product keys: ${Object.keys(products[0]).join(', ')}`);
+    logger.info(`First product metadata: ${JSON.stringify(products[0].metadata, null, 2)}`);
+    logger.info(`First product images: ${JSON.stringify(products[0].images, null, 2)}`);
+    logger.info(`First product thumbnail: ${products[0].thumbnail}`);
   }
+  logger.info('======================================');
 
   const productsWithCalculatedPrice = products.map((product) => {
     const minPrice = product.variants.reduce((acc, variant) => {
@@ -83,6 +83,21 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const totalInventory = product.variants.reduce((acc, variant) => {
       return acc + (variant.inventory_quantity || 0);
     }, 0);
+
+    // Safely extract image URLs
+    const imageUrls: string[] = [];
+    if (product.images && Array.isArray(product.images)) {
+      product.images.forEach(img => {
+        if (img && img.url && typeof img.url === 'string') {
+          imageUrls.push(img.url);
+        }
+      });
+    }
+    
+    // Fallback to thumbnail if no images
+    if (imageUrls.length === 0 && product.thumbnail) {
+      imageUrls.push(product.thumbnail);
+    }
 
     return {
       id: product.id,
@@ -99,7 +114,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       price: Math.round(minPrice * 100), // Convert to cents
       compare_at_price: minPrice !== maxPrice ? Math.round(maxPrice * 100) : null,
       currency: currencyCode.toUpperCase(),
-      images: product.images?.map(img => img.url) || [product.thumbnail].filter(Boolean),
+      // images: imageUrls, // Temporarily commented out
       categories: product.categories.map((category) => category.name),
       created_at: product.created_at,
       updated_at: product.updated_at,
@@ -108,7 +123,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
     res.json(productsWithCalculatedPrice);
   } catch (error) {
-    console.error('Error in product feed:', error);
+    const logger = req.scope.resolve("logger");
+    logger.error('Error in product feed:', error);
     res.status(500).json({ 
       error: 'Failed to generate product feed',
       message: error.message 
