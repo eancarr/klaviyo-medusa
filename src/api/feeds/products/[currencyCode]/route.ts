@@ -24,6 +24,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       "variants.calculated_price.*",
       "images.*",
       "categories.*",
+      "brand.*",
     ],
     context: {
       variants: {
@@ -33,6 +34,16 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       },
     },
   });
+
+  // Debug: Log brand data for first product
+  if (products.length > 0) {
+    console.log('Sample product brand data:', {
+      productId: products[0].id,
+      productTitle: products[0].title,
+      brandObject: products[0].brand,
+      brandName: products[0].brand?.name,
+    });
+  }
 
   const productsWithCalculatedPrice = products.map((product) => {
     const minPrice = product.variants.reduce((acc, variant) => {
@@ -56,7 +67,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       image_link: product.images?.[0]?.url || product.thumbnail,
       handle: product.handle,
       sku: product.variants?.[0]?.sku || product.id,
-      brand: product.metadata?.brand || "Unknown",
+      brand: product.brand?.name || "Unknown",
       condition: "new",
       availability: totalInventory > 0 ? "in stock" : "out of stock",
       inventory_quantity: totalInventory,
