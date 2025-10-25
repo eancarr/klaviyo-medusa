@@ -36,9 +36,29 @@ A Medusa plugin that integrates Klaviyo's email marketing and customer engagemen
 
 ## Features
 
+### Customer Management
 - Automatically sync customers to Klaviyo when created or updated
-- Send order data to Klaviyo on order placement
+- Handle marketing consent for email/SMS subscriptions
+- Bulk subscription management based on customer consent metadata
+
+### Order Tracking
+- **Order Placed** - Track when orders are placed with complete order details
+- **Order Shipped** - Track fulfillment creation with tracking numbers and carrier info
+- **Order Canceled** - Track order cancellations with refund amounts
+- **Order Delivered** - Track when orders are completed/delivered
+
+### Return Tracking
+- **Return Requested** - Track return requests with item details and reasons
+- **Return Received** - Track when returns are received at warehouse
+
+### Behavioral Tracking (Server-Side)
+- **Added to Cart** - Track when items are added to cart (with product details)
+- **Started Checkout** - Track when customers begin checkout process
+
+### Product Catalog
 - Klaviyo-compatible product feed for catalog syncing
+- Multi-currency support
+- Complete product details including inventory and pricing
 
 ## Prerequisites
 
@@ -81,12 +101,34 @@ KLAVIYO_API_KEY=your_klaviyo_api_key
 
 ## Usage
 
-Once installed and configured, the plugin will automatically:
+Once installed and configured, the plugin will automatically track the following events:
 
-1. Sync customer data to Klaviyo when customers are created or updated
-2. Send order data to Klaviyo when orders are placed
+### Automatic Event Tracking
 
-The plugin uses Medusa event subscribers to listen for relevant events and trigger synchronization workflows.
+The plugin uses Medusa event subscribers to listen for events and send them to Klaviyo:
+
+#### Customer Events
+- `customer.created` - Syncs new customers to Klaviyo
+- `customer.updated` - Updates customer profiles in Klaviyo
+
+#### Order Events
+- `order.placed` - Sends "Placed Order" event with order details
+- `order.fulfillment_created` - Sends "Order Shipped" event with tracking info
+- `order.canceled` - Sends "Order Canceled" event with refund details
+- `order.completed` - Sends "Order Delivered" event
+
+#### Return Events
+- `order.return_requested` - Sends "Return Requested" event
+- `order.return_received` - Sends "Return Received" event
+
+#### Cart Events
+- `cart.updated` - Tracks "Added to Cart" and "Started Checkout" events
+
+All events are tracked server-side for reliability and include complete data from your Medusa database. These events can be used in Klaviyo to:
+- Build automated email flows (abandoned cart, shipping notifications, etc.)
+- Segment customers based on behavior
+- Track customer lifetime value
+- Create product recommendations
 
 ### Client-Side Integration
 
