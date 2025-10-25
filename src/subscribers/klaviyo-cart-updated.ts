@@ -6,7 +6,7 @@ import { sendCartEventToKlaviyoWorkflow } from "../workflows";
 
 // In-memory store to track previous cart states
 // In production, you might want to use Redis or the cart metadata
-const cartStateStore = new Map<string, { itemCount: number; hasShippingAddress: boolean; hasEmail: boolean }>();
+const cartStateStore = new Map<string, { itemCount: number; hasShippingAddress: boolean; hasEmail: boolean; itemIds: string[] }>();
 
 export default async function klaviyoCartUpdatedHandler({
   event: { data },
@@ -41,6 +41,7 @@ export default async function klaviyoCartUpdatedHandler({
     }
 
     console.log(`[Klaviyo Cart] Cart updated: ${cartId}, email: ${cart.email || 'none'}, items: ${cart.items?.length || 0}`);
+    console.log(`[Klaviyo Cart] Cart items:`, cart.items?.map((item: any) => `${item.title} (id: ${item.id}, variant: ${item.variant_id})`).join(', ') || 'none');
 
     const currentItemCount = cart.items?.length || 0;
     const hasShippingAddress = !!(cart.shipping_address?.address_1);
@@ -52,20 +53,34 @@ export default async function klaviyoCartUpdatedHandler({
     // If cart now has email but didn't before, check if we should send events
     const emailJustAdded = cart.email && previousState && !previousState.hasEmail;
 
-    // Track "Added to Cart" when item count increases AND cart has email
-    if (cart.email && previousState && currentItemCount > previousState.itemCount) {
-      // Find the newly added item (last item in the array)
-      const lastItem = cart.items?.[cart.items.length - 1];
+    // Get current item IDs
+    const currentItemIds = cart.items?.map((item: any) => item.id) || [];
+    const previousItemIds = previousState?.itemIds || [];
+
+    // Track "Added to Cart" by detecting new items (compare IDs)
+    if (cart.email && previousState) {
+      // Find items that are in current cart but weren't in previous state
+      const newItemIds = currentItemIds.filter((id: string) => !previousItemIds.includes(id));
       
-      if (lastItem) {
-        console.log(`[Klaviyo Cart] Sending "Added to Cart" for item:`, lastItem.title);
-        await sendCartEventToKlaviyoWorkflow(container).run({
-          input: {
-            cart,
-            eventName: "Added to Cart",
-            addedItem: lastItem,
-          },
-        });
+      if (newItemIds.length > 0) {
+        console.log(`[Klaviyo Cart] Detected ${newItemIds.length} new item(s)`);
+        
+        // Send event for each newly added item
+        for (const itemId of newItemIds) {
+          const newItem = cart.items?.find((item: any) => item.id === itemId);
+          if (newItem) {
+            console.log(`[Klaviyo Cart] Sending "Added to Cart" for item:`, newItem.title);
+            await sendCartEventToKlaviyoWorkflow(container).run({
+              input: {
+                cart,
+                eventName: "Added to Cart",
+                addedItem: newItem,
+              },
+            });
+          }
+        }
+      } else if (currentItemCount !== previousState.itemCount) {
+        console.log(`[Klaviyo Cart] Item count changed but no new items detected. Might be quantity update or item removal.`);
       }
     }
 
@@ -100,6 +115,7 @@ export default async function klaviyoCartUpdatedHandler({
       itemCount: currentItemCount,
       hasShippingAddress,
       hasEmail: !!cart.email,
+      itemIds: currentItemIds,
     });
 
     console.log(`[Klaviyo Cart] State updated for cart ${cartId}`);
