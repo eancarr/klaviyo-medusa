@@ -11,7 +11,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const currencyCode = req.params.currencyCode.toLowerCase();
     
     // Get the storefront URL from environment variable
-    const baseUrl = process.env.STOREFRONT_URL || 'http://localhost:3000';
+    const baseUrl = process.env.STOREFRONT_URL || 'http://localhost:8000';
 
     // Debug: Try to query brands first
     try {

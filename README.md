@@ -2,19 +2,7 @@
 
 A Medusa plugin that integrates Klaviyo's email marketing and customer engagement platform with your Medusa store.
 
-<p align="center">
-  <a href="https://twitter.com/intent/follow?screen_name=VariableVic" style="display: inline-block; margin-right: 8px;">
-    <img src="https://img.shields.io/twitter/follow/VariableVic.svg?label=Follow%20@VariableVic" alt="Follow @VariableVic" />
-  </a>
-
-  <a href="https://victorgerbrands.nl">
-    <img src="https://img.shields.io/badge/www-victorgerbrands.nl-blue.svg?style=flat" alt="Website" />
-  </a>
-
-  <a href="https://www.linkedin.com/in/victorgerbrands/">
-    <img src="https://img.shields.io/badge/linkedin-victorgerbrands-blue.svg?style=flat&logo=linkedin" alt="LinkedIn" />
-  </a>
-</p>
+> **Note**: This is a fork of [@variablevic/klaviyo-medusa](https://github.com/variablevic/klaviyo-medusa) with feature enhancements including event tracking, return management, cart behavioral tracking, enhanced product feed with brand support, and bulk subscription management.
 
 
 
@@ -40,6 +28,8 @@ A Medusa plugin that integrates Klaviyo's email marketing and customer engagemen
 - Automatically sync customers to Klaviyo when created or updated
 - Handle marketing consent for email/SMS subscriptions
 - Bulk subscription management based on customer consent metadata
+- Support for email and SMS marketing consent
+- Transactional SMS consent handling
 
 ### Order Tracking
 - **Order Placed** - Track when orders are placed with complete order details
@@ -53,12 +43,17 @@ A Medusa plugin that integrates Klaviyo's email marketing and customer engagemen
 
 ### Behavioral Tracking (Server-Side)
 - **Added to Cart** - Track when items are added to cart (with product details)
-- **Started Checkout** - Track when customers begin checkout process
+  - Detects new items and quantity increases
+  - Supports retrospective tracking when email is added to cart
+  - Works for both logged-in users and guests
+  - **Note**: Cart tracking uses in-memory state management. For production at scale, consider implementing Redis-based state management to persist cart state across server restarts.
+- **Started Checkout** - Track when customers begin checkout process (triggered when shipping address is added)
 
 ### Product Catalog
 - Klaviyo-compatible product feed for catalog syncing
 - Multi-currency support
-- Complete product details including inventory and pricing
+- Complete product details including inventory, pricing, and brand information
+- Supports product variants with calculated prices
 
 ## Prerequisites
 
@@ -68,7 +63,13 @@ A Medusa plugin that integrates Klaviyo's email marketing and customer engagemen
 ## Installation
 
 ```bash
-yarn add @variablevic/klaviyo-medusa
+yarn add @eancarr/klaviyo-medusa
+```
+
+Or with npm:
+
+```bash
+npm install @eancarr/klaviyo-medusa
 ```
 
 Then add the plugin to your `medusa-config.js` file:
@@ -77,7 +78,7 @@ Then add the plugin to your `medusa-config.js` file:
 const plugins = [
   // ...
   {
-    resolve: "@variablevic/klaviyo-medusa",
+    resolve: "@eancarr/klaviyo-medusa",
     options: {
       apiKey: process.env.KLAVIYO_API_KEY,
     },
@@ -97,6 +98,7 @@ const plugins = [
 
 ```bash
 KLAVIYO_API_KEY=your_klaviyo_api_key
+STOREFRONT_URL=https://your-storefront-url.com  # Optional: Your actual storefront URL (where customers view products). Used for product feed links. Defaults to http://localhost:8000
 ```
 
 ## Usage
@@ -141,9 +143,10 @@ When collecting customer information (during registration, newsletter signup, or
 const updateCustomerConsent = async (
   customerId: string,
   consentSettings: {
-    email_marketing: boolean;
-    sms_marketing?: boolean;
+    email?: boolean;
+    sms?: boolean;
     transactional_sms?: boolean;
+    consented_at?: string; // ISO date string (optional)
   }
 ) => {
   // Call your store API endpoint that updates customer metadata
@@ -155,9 +158,7 @@ const updateCustomerConsent = async (
     credentials: "include",
     body: JSON.stringify({
       metadata: {
-        klaviyo: {
-          consent: consentSettings,
-        },
+        klaviyo: consentSettings, // Can be object or JSON string
       },
     }),
   });
@@ -165,16 +166,22 @@ const updateCustomerConsent = async (
 
 // Usage example
 updateCustomerConsent("cus_123", {
-  email_marketing: true,
-  sms_marketing: false,
+  email: true,
+  sms: false,
+  transactional_sms: true,
 });
 ```
 
 The plugin checks for these consent settings when syncing customer data to Klaviyo:
 
-- `metadata.klaviyo.consent.email_marketing`: Set to `true` to opt the customer into email marketing
-- `metadata.klaviyo.consent.sms_marketing`: Set to `true` to opt the customer into SMS marketing
-- Any other consent fields specific to your implementation
+- `metadata.klaviyo.email`: Set to `true` to opt the customer into email marketing
+- `metadata.klaviyo.sms`: Set to `true` to opt the customer into SMS marketing
+- `metadata.klaviyo.transactional_sms`: Set to `true` to opt the customer into transactional SMS
+- `metadata.klaviyo.consented_at`: Optional ISO date string for consent timestamp
+
+The `metadata.klaviyo` value can be either:
+- A JSON object with the consent properties
+- A JSON string that will be parsed automatically
 
 ### Product Feed
 
@@ -193,17 +200,21 @@ To use the product feed in Klaviyo:
    - Enter your product feed URL
    - Configure sync settings according to your needs
 
-The product feed includes essential product data:
+The product feed includes comprehensive product data:
 
 - Product ID
 - Title
 - Description
 - Handle/Slug
+- SKU
 - Thumbnail and Images
-- Pricing information
+- **Brand** information
+- Pricing information (min/max prices, compare-at-price)
 - Currency
 - Product URL
 - Categories
+- Inventory quantity and availability status
+- Product variants with calculated prices
 
 ## Extending the Plugin
 
@@ -231,13 +242,38 @@ await klaviyoService.createEvent({
     // Your custom properties
   },
 });
+
+// Upsert a customer profile
+await klaviyoService.upsertProfile({
+  email: "customer@example.com",
+  phone_number: "+1234567890",
+  // ... other profile attributes
+});
+
+// Bulk subscribe profiles
+await klaviyoService.bulkSubscribeProfiles([
+  {
+    type: "profile",
+    id: "profile-id",
+    attributes: {
+      email: "customer@example.com",
+      subscriptions: {
+        email: {
+          marketing: {
+            consent: "SUBSCRIBED",
+          },
+        },
+      },
+    },
+  },
+]);
 ```
 
 ## Local Development
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/klaviyo-medusa.git
+git clone https://github.com/eancarr/klaviyo-medusa.git
 
 # Install dependencies
 cd klaviyo-medusa

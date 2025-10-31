@@ -6,11 +6,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eancarr/my-klaviyo-medusa.git"
+    "url": "git+https://github.com/eancarr/klaviyo-medusa.git"
   },
-  "homepage": "https://github.com/eancarr/my-klaviyo-medusa#readme",
+  "homepage": "https://github.com/eancarr/klaviyo-medusa#readme",
   "bugs": {
-    "url": "https://github.com/eancarr/my-klaviyo-medusa/issues"
+    "url": "https://github.com/eancarr/klaviyo-medusa/issues"
   },
   "files": [
     ".medusa/server"
